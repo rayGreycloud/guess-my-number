@@ -31,7 +31,7 @@ const App = () => {
           {!userNumber ? (
             <StartGameScreen onPickNumber={pickedNumberHandler} />
           ) : (
-            <GameScreen />
+            <GameScreen userNumber={userNumber} />
           )}
         </SafeAreaView>
       </ImageBackground>
