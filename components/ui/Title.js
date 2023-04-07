@@ -1,9 +1,14 @@
 import { Text, StyleSheet } from 'react-native';
 
-import Colors from '../constants/colors';
+import Colors from '../../constants/colors';
 
-const Title = ({ children }) => {
-  return <Text style={styles.title}>{children}</Text>;
+const Title = ({ children, titleColor }) => {
+  const titleStyles = {
+    ...styles.title,
+    color: titleColor,
+    borderColor: titleColor
+  };
+  return <Text style={titleStyles}>{children}</Text>;
 };
 
 export default Title;
