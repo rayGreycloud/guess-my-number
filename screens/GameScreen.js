@@ -26,14 +26,5 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 24,
     paddingBottom: 12
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#ddb52f',
-    textAlign: 'center',
-    borderWidth: 2,
-    borderColor: '#ddb52f',
-    padding: 12
   }
 });
