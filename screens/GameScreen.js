@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Alert, View, Text, StyleSheet } from 'react-native';
+import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
 
+import GuessLogItem from '../components/game/GuessLogItem';
 import NumberContainer from '../components/game/NumberContainer';
 import Card from '../components/ui/Card';
 import InputLabel from '../components/ui/InputLabel';
@@ -14,30 +15,30 @@ import generateRandomNumberBetween from '../utils/random';
 let minBoundary = 1;
 let maxBoundary = 100;
 
-const GameScreen = ({ onGameOver, userNumber }) => {
+const GameScreen = ({ onGameOver, setRoundsNumber, userNumber }) => {
   const initialGuess = generateRandomNumberBetween(1, 100, userNumber);
   const [currentGuess, setCurrentGuess] = useState(initialGuess);
-  const [priorGuesses, setPriorGuesses] = useState([]);
+  const [priorGuesses, setPriorGuesses] = useState([initialGuess]);
 
   useEffect(() => {
     if (currentGuess === userNumber) {
+      setRoundsNumber(priorGuesses.length);
       onGameOver();
     }
   }, [currentGuess, userNumber]);
+
+  useEffect(() => {
+    minBoundary = 1;
+    maxBoundary = 100;
+  }, []);
 
   const getNewGuess = (min, max, current) => {
     const newGuess = generateRandomNumberBetween(min, max, current);
 
     const wasAlreadyGuessed = priorGuesses.includes(newGuess);
     if (wasAlreadyGuessed) {
-      console.log('Already guessed: ', newGuess, '... trying again.');
       return getNewGuess(min, max, current);
     }
-    console.log('adding new guess: ', newGuess, '... to priorGuesses.');
-    console.log('priorGuesses: ', priorGuesses);
-    const updated = [...priorGuesses, newGuess];
-    console.log('updated: ', updated);
-    setPriorGuesses(updated);
 
     return newGuess;
   };
@@ -58,13 +59,14 @@ const GameScreen = ({ onGameOver, userNumber }) => {
     } else {
       minBoundary = currentGuess;
     }
-    console.log('minBoundary: ', minBoundary);
-    console.log('maxBoundary: ', maxBoundary);
 
     const newGuess = getNewGuess(minBoundary, maxBoundary, currentGuess);
 
     setCurrentGuess(newGuess);
+    setPriorGuesses((prevPriorGuesses) => [newGuess, ...prevPriorGuesses]);
   };
+
+  const guessRoundsLength = priorGuesses.length;
 
   return (
     <View style={styles.screen}>
@@ -86,9 +88,18 @@ const GameScreen = ({ onGameOver, userNumber }) => {
           </View>
         </View>
       </Card>
-      <View>
-        <Text>Rounds</Text>
-        {/** Log Rounds */}
+      <View style={styles.roundsContainer}>
+        <FlatList
+          data={priorGuesses}
+          renderItem={(itemData) => (
+            <GuessLogItem
+              guessNumber={itemData.item}
+              roundNumber={guessRoundsLength - itemData.index}
+            />
+          )}
+          keyExtractor={(item, index) => item}
+          alwaysBounceVertical={false}
+        />
       </View>
     </View>
   );
@@ -115,6 +126,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row'
   },
   button: {
+    flex: 1
+  },
+  roundsContainer: {
     flex: 1
   }
 });
