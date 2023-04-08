@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ImageBackground, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -17,20 +17,22 @@ SplashScreen.preventAutoHideAsync().catch(console.warn);
 const App = () => {
   const [userNumber, setUserNumber] = useState();
   const [gameIsOver, setGameIsOver] = useState(false);
+  const [roundsNumber, setRoundsNumber] = useState(0);
 
   const [fontsLoaded] = useFonts({
     'open-sans': require('./assets/fonts/OpenSans-Regular.ttf'),
     'open-sans-bold': require('./assets/fonts/OpenSans-Bold.ttf')
   });
 
-  useEffect(() => {
-    console.log('useEffect');
+  const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
-      // Hide the splash screen after the app is loaded
-      setTimeout(() => SplashScreen.hideAsync().catch(console.warn), 2000);
-      // SplashScreen.hideAsync().catch(console.warn);
+      await SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   const pickedNumberHandler = (pickedNumber) => {
     setUserNumber(pickedNumber);
@@ -43,12 +45,14 @@ const App = () => {
   const resetGameHandler = () => {
     setUserNumber(null);
     setGameIsOver(false);
+    setRoundsNumber(0);
   };
 
   return (
     <LinearGradient
       colors={[Colors.primary700, Colors.accent500]}
       style={styles.rootScreen}
+      onLayout={onLayoutRootView}
     >
       <ImageBackground
         source={require('./assets/images/background.png')}
@@ -59,13 +63,18 @@ const App = () => {
         <SafeAreaView style={styles.rootScreen}>
           {gameIsOver && userNumber ? (
             <GameOverScreen
+              onStartNewGame={resetGameHandler}
+              roundsNumber={roundsNumber}
               userNumber={userNumber}
-              resetGameHandler={resetGameHandler}
             />
           ) : !userNumber ? (
             <StartGameScreen onPickNumber={pickedNumberHandler} />
           ) : (
-            <GameScreen userNumber={userNumber} onGameOver={gameOverHandler} />
+            <GameScreen
+              onGameOver={gameOverHandler}
+              setRoundsNumber={setRoundsNumber}
+              userNumber={userNumber}
+            />
           )}
         </SafeAreaView>
       </ImageBackground>
