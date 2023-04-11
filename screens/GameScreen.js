@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
+import {
+  Alert,
+  FlatList,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View
+} from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
 
@@ -19,6 +26,8 @@ const GameScreen = ({ onGameOver, setRoundsNumber, userNumber }) => {
   const initialGuess = generateRandomNumberBetween(1, 100, userNumber);
   const [currentGuess, setCurrentGuess] = useState(initialGuess);
   const [priorGuesses, setPriorGuesses] = useState([initialGuess]);
+
+  const { width } = useWindowDimensions();
 
   useEffect(() => {
     if (currentGuess === userNumber) {
@@ -68,14 +77,13 @@ const GameScreen = ({ onGameOver, setRoundsNumber, userNumber }) => {
 
   const guessRoundsLength = priorGuesses.length;
 
-  return (
-    <View style={styles.screen}>
-      <Title style={styles.title}>Opponent's Guess</Title>
-
+  const portraitContent = (
+    <>
       <NumberContainer>{currentGuess}</NumberContainer>
+
       <Card style={styles.card}>
         <InputLabel style={styles.label}>Higher or Lower?</InputLabel>
-        <View style={styles.buttonContainer}>
+        <View style={styles.buttonsContainer}>
           <View style={styles.button}>
             <PrimaryButton onPress={nextGuessHandler.bind(this, 'higher')}>
               <Ionicons name='md-add' size={24} />
@@ -88,6 +96,31 @@ const GameScreen = ({ onGameOver, setRoundsNumber, userNumber }) => {
           </View>
         </View>
       </Card>
+    </>
+  );
+
+  const landscapeContent = (
+    <View style={styles.buttonsContainerWide}>
+      <View style={styles.button}>
+        <PrimaryButton onPress={nextGuessHandler.bind(this, 'higher')}>
+          <Ionicons name='md-add' size={24} />
+        </PrimaryButton>
+      </View>
+      <NumberContainer>{currentGuess}</NumberContainer>
+      <View style={styles.button}>
+        <PrimaryButton onPress={nextGuessHandler.bind(this, 'lower')}>
+          <Ionicons name='md-remove' size={24} />
+        </PrimaryButton>
+      </View>
+    </View>
+  );
+
+  return (
+    <View style={styles.screen}>
+      <Title style={styles.title}>Opponent's Guess</Title>
+
+      {width > 500 ? landscapeContent : portraitContent}
+
       <View style={styles.roundsContainer}>
         <FlatList
           data={priorGuesses}
@@ -110,11 +143,15 @@ export default GameScreen;
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
+    alignItems: 'center',
     paddingHorizontal: 24,
+    paddingTop: 18,
     paddingBottom: 12
   },
   title: {
-    color: 'white'
+    color: 'white',
+    maxWidth: '80%',
+    width: 300
   },
   card: {
     marginTop: 0
@@ -122,8 +159,12 @@ const styles = StyleSheet.create({
   label: {
     marginBottom: 12
   },
-  buttonContainer: {
+  buttonsContainer: {
     flexDirection: 'row'
+  },
+  buttonsContainerWide: {
+    flexDirection: 'row',
+    alignItems: 'center'
   },
   button: {
     flex: 1
